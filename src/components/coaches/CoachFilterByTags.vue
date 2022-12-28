@@ -17,19 +17,22 @@
 
 
 <script>
+import { ref } from '@vue/reactivity';
+import { toRefs } from 'vue';
 export default {
   props: ['tags'],
   emits: ['setTags'],
-  data() {
+  setup(props, { emit }) {
+    const selected = ref([]);
+    function onChange() {
+      emit('setTags', selected.value);
+    }
+
     return {
-      selected: [],
+      ...toRefs(props),
+      selected,
+      onChange,
     };
-  },
-  methods: {
-    onChange() {
-      console.log(this.selected);
-      this.$emit('setTags', this.selected);
-    },
   },
 };
 </script>

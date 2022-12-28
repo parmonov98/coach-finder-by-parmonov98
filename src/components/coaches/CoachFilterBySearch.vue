@@ -19,14 +19,24 @@
 
 
 <script>
-import { mapActions } from 'vuex';
+import { useStore } from 'vuex';
 export default {
   emits: ['setSearch'],
-  methods: {
-    ...mapActions('coach', ['filterCoaches']),
-    onKeyUp(e) {
-      this.$emit('setSearch', e.target.value);
-    },
+  setup(_, { emit }) {
+    const store = useStore();
+
+    function onKeyUp(e) {
+      emit('setSearch', e.target.value);
+    }
+
+    function filterCoaches() {
+      store.dispatch('coach/filterCoaches');
+    }
+
+    return {
+      onKeyUp,
+      filterCoaches,
+    };
   },
 };
 </script>

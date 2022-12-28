@@ -49,15 +49,11 @@ export default {
 
     const filtered = state.items.filter(item => {
       let is_ok = true;
-      console.log(search);
-      console.log(item);
       if (search != '') {
         if (!item.first_name.includes(search) && !item.last_name.includes(search)) {
           is_ok = false;
         }
       }
-
-      console.log(is_ok);
 
       if (field != '') {
         if (item.field !== field) {
@@ -65,10 +61,7 @@ export default {
         }
       }
 
-      console.log(is_ok);
-
       if (item.tags && item.tags.length > 0 && selected_tags && selected_tags.length > 0) {
-        console.log(selected_tags, item.tags);
         const tag_names = item.tags.reduce((arr, subitem) => {
           arr.push(subitem.name);
           return arr;
@@ -84,8 +77,6 @@ export default {
           is_ok = false;
         }
       }
-
-      console.log(is_ok);
 
       return is_ok;
     });

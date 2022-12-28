@@ -48,6 +48,8 @@
 </template>
 
 <script>
+import { toRefs, reactive, ref, computed } from 'vue';
+
 export default {
   props: {
     id: {
@@ -84,37 +86,30 @@ export default {
     },
   },
 
-  data() {
-    return {
-      selectedTag: null,
-    };
-  },
-  created: function () {
-    if (this.tags && this.tags.length > 0) {
-      this.setSelectedTag(this.tags[0].name);
-    } else {
-      this.setSelectedTag(null);
-    }
-  },
-  methods: {
-    setSelectedTag(name) {
-      if (name && this.tags) {
-        this.selectedTag = this.tags?.find((item) => item.name === name);
+  setup(props) {
+    const state = reactive(props);
+
+    const selectedTag = ref(null);
+    function setSelectedTag(newName) {
+      if (newName && state.tags) {
+        selectedTag.value = state.tags?.find((item) => item.name === newName);
       }
-    },
-    // selectedTag() {
-    //   if (this.tags && this.tags.length > 0) {
-    //     return this.tags[0];
-    //   } else {
-    //     return null;
-    //   }
-    //   // return  this.tags[0] : null;
-    // },
-  },
-  computed: {
-    name() {
-      return this.first_name + ' ' + this.last_name;
-    },
+    }
+    if (state.tags && state.tags.length > 0) {
+      setSelectedTag(state.tags[0].name);
+    } else {
+      setSelectedTag(null);
+    }
+
+    const name = computed(() => {
+      return state.first_name + ' ' + state.last_name;
+    });
+
+    return {
+      ...toRefs(state),
+      selectedTag,
+      name,
+    };
   },
 };
 </script>

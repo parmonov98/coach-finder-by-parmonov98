@@ -81,10 +81,16 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex';
+import { reactive, ref, toRefs } from 'vue';
+import { useRouter } from 'vue-router';
+import { useStore } from 'vuex';
 export default {
-  data() {
-    return {
+  setup() {
+    const isFormValid = ref(true);
+    const isLoading = ref(true);
+    const error = ref(null);
+
+    const state = reactive({
       email: {
         val: '',
         isValid: true,
@@ -97,48 +103,57 @@ export default {
         val: '',
         isValid: true,
       },
-      isFormValid: true,
-      isLoading: true,
-      error: null,
-    };
-  },
-  methods: {
-    ...mapActions('auth', ['signUp']),
-    clearValidity(input) {
-      this[input].isValid = true;
-      this.isFormValid = true;
-    },
-    validateForm() {
-      if (this.email.val === '') {
-        this.email.isValid = false;
-        this.isFormValid = false;
+    });
+
+    function clearValidity(input) {
+      state[input].isValid = true;
+      isFormValid.value = true;
+    }
+
+    function validateForm() {
+      if (state.email.val === '') {
+        state.email.isValid = false;
+        isFormValid.value = false;
       }
 
-      if (this.password.val === '' || this.password.val.length < 6) {
-        this.password.isValid = false;
-        this.isFormValid = false;
+      if (state.password.val === '' || state.password.val.length < 6) {
+        state.password.isValid = false;
+        isFormValid.value = false;
       }
 
-      if (this.password.val !== this.passwordConfirmation.val) {
-        this.passwordConfirmation.isValid = false;
-        this.isFormValid = false;
+      if (state.password.val !== state.passwordConfirmation.val) {
+        state.passwordConfirmation.isValid = false;
+        isFormValid.value = false;
       }
-    },
-    async onSubmit() {
-      this.validateForm();
-      if (this.isFormValid) {
-        const response = await this.signUp({
-          email: this.email.val,
-          password: this.password.val,
+    }
+
+    const store = useStore();
+    const router = useRouter();
+
+    async function onSubmit() {
+      validateForm();
+      if (isFormValid.value) {
+        const response = await store.dispatch('auth/signUp', {
+          email: state.email.val,
+          password: state.password.val,
         });
         console.log(response);
         if (response.error && response.error.message) {
           this.error = response.error.message;
         } else {
-          this.$router.replace({ name: 'couches-register' });
+          router.replace({ name: 'couches-register' });
         }
       }
-    },
+    }
+
+    return {
+      ...toRefs(state),
+      isFormValid,
+      isLoading,
+      error,
+      clearValidity,
+      onSubmit,
+    };
   },
 };
 </script>

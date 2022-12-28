@@ -26,7 +26,8 @@
 </template>
 
 <script>
-import { mapActions, mapGetters } from 'vuex';
+import { computed, ref } from 'vue';
+import { useStore } from 'vuex';
 import CoachesList from '../../components/coaches/CoachesList.vue';
 import CoachFilters from '../../components/coaches/CoachFilters.vue';
 export default {
@@ -34,25 +35,21 @@ export default {
     CoachesList,
     CoachFilters,
   },
-  created: function () {
-    this.loadCouches();
-  },
+  setup() {
+    const store = useStore();
+    const isLoading = ref(false);
 
-  data() {
-    return {
-      isLoading: false,
-    };
-  },
-  computed: {
-    ...mapGetters('auth', ['isAuthed']),
-  },
-  methods: {
-    ...mapActions('coach', ['getCoaches']),
-    async loadCouches() {
-      this.isLoading = true;
-      await this.getCoaches();
-      this.isLoading = false;
-    },
+    loadCouches();
+
+    const isAuthed = computed(() => store.getters['auth/isAuthed']);
+
+    async function loadCouches() {
+      isLoading.value = true;
+      await store.dispatch('coach/getCoaches');
+      isLoading.value = false;
+    }
+
+    return { isLoading, isAuthed, loadCouches };
   },
 };
 </script>

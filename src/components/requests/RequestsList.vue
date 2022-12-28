@@ -13,15 +13,23 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
+import { computed } from 'vue';
+import { useStore } from 'vuex';
 import RequestItem from './RequestItem.vue';
 
 export default {
   components: {
     RequestItem,
   },
-  computed: {
-    ...mapGetters('requests', ['requests', 'hasRequests']),
+  setup() {
+    const store = useStore();
+    const hasRequests = computed(() => store.getters['requests/hasRequests']);
+    const requests = computed(() => store.getters['requests/requests']);
+
+    return {
+      hasRequests,
+      requests,
+    };
   },
 };
 </script>

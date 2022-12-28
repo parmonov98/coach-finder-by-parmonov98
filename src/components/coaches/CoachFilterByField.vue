@@ -16,13 +16,20 @@
 
 
 <script>
+import { toRefs } from 'vue';
+
 export default {
   props: ['fields'],
   emits: ['setField'],
-  methods: {
-    onChange(e) {
-      this.$emit('setField', e.target.value);
-    },
+  setup(props, { emit }) {
+    function onChange(e) {
+      emit('setField', e.target.value);
+    }
+
+    return {
+      ...toRefs(props),
+      onChange,
+    };
   },
 };
 </script>

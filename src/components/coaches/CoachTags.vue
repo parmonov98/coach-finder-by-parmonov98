@@ -29,11 +29,14 @@
 </template>
 
 <script>
+import { reactive, toRefs } from 'vue';
+
 export default {
   emits: ['set-tags'],
   props: ['valid'],
-  data() {
-    return {
+
+  setup(props, { emit }) {
+    const state = reactive({
       currentTag: {
         id: 1,
         value: 0,
@@ -41,46 +44,54 @@ export default {
       },
       isValid: true,
       tags: [],
-    };
-  },
-  methods: {
-    onChangeCurrentTag(e) {
-      this.currentTag.name = e.target.value;
-    },
-    onChangeProgress(new_value) {
-      this.currentTag.value = parseFloat(new_value);
-    },
+      ...props,
+    });
+    function onChangeCurrentTag(e) {
+      state.currentTag.name = e.target.value;
+    }
+    function onChangeProgress(new_value) {
+      state.currentTag.value = parseFloat(new_value);
+    }
 
-    onSubmitCurrentTag(e) {
+    function onSubmitCurrentTag(e) {
       e.preventDefault();
-      const selectedTag = this.tags.find(
-        (item) => item.id === this.currentTag.id
+      const selectedTag = state.tags.find(
+        (item) => item.id === state.currentTag.id
       );
       if (!selectedTag) {
-        this.tags.push({ ...this.currentTag });
-        this.currentTag.id++;
-        this.currentTag.name = '';
-        this.currentTag.value = 0;
+        state.tags.push({ ...state.currentTag });
+        state.currentTag.id++;
+        state.currentTag.name = '';
+        state.currentTag.value = 0;
       } else {
-        const selectedTagIndex = this.tags.findIndex(
-          (item) => item.id === this.currentTag.id
+        const selectedTagIndex = state.tags.findIndex(
+          (item) => item.id === state.currentTag.id
         );
-        const selectedTag = this.tags[selectedTagIndex];
-        selectedTag.name = this.currentTag.name;
-        selectedTag.value = this.currentTag.value;
-        this.currentTag.id = this.tags.length + 1;
-        this.currentTag.name = '';
-        this.currentTag.value = 0;
+        const selectedTag = state.tags[selectedTagIndex];
+        selectedTag.name = state.currentTag.name;
+        selectedTag.value = state.currentTag.value;
+        state.currentTag.id = state.tags.length + 1;
+        state.currentTag.name = '';
+        state.currentTag.value = 0;
       }
 
-      this.$emit('set-tags', [...this.tags]);
-    },
-    setCurrentTag(id) {
-      const selectedTag = this.tags.find((item) => item.id === id);
+      emit('set-tags', [...state.tags]);
+    }
+
+    function setCurrentTag(id) {
+      const selectedTag = state.tags.find((item) => item.id === id);
       if (selectedTag) {
-        this.currentTag = { ...selectedTag };
+        state.currentTag = { ...selectedTag };
       }
-    },
+    }
+
+    return {
+      ...toRefs(state),
+      onChangeCurrentTag,
+      onChangeProgress,
+      setCurrentTag,
+      onSubmitCurrentTag,
+    };
   },
 };
 </script>

@@ -4,22 +4,26 @@
     <!-- <header class="header" v-if="$slots.header">
       <slot name="header"></slot>
     </header> -->
-    <transition name="layout" mode="out-in">
-      <component :is="slotProps.Component"></component>
-    </transition>
+    <suspense>
+      <transition name="layout" mode="out-in">
+        <component :is="slotProps.Component"></component>
+      </transition>
+    </suspense>
   </router-view>
 </template>
 
 <script>
-import { mapActions } from 'vuex';
+import { useStore } from 'vuex';
 import TheHeader from './components/layout/TheHeader.vue';
+
 export default {
   components: { TheHeader },
-  created: async function () {
-    await this.tryLogin();
-  },
-  methods: {
-    ...mapActions('auth', ['tryLogin']),
+  setup() {
+    const store = useStore();
+    async function onCreated() {
+      await store.dispatch('auth/tryLogin');
+    }
+    onCreated();
   },
 };
 </script>

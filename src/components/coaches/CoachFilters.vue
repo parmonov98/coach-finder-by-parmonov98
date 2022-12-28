@@ -17,7 +17,8 @@
 </template>
 
 <script>
-import { mapActions, mapGetters } from 'vuex';
+import { reactive, toRefs, computed } from 'vue';
+import { useStore } from 'vuex';
 import CoachFilterByField from './CoachFilterByField.vue';
 import CoachFilterBySearch from './CoachFilterBySearch.vue';
 import CoachFilterByTags from './CoachFilterByTags.vue';
@@ -27,43 +28,52 @@ export default {
     CoachFilterBySearch,
     CoachFilterByTags,
   },
-  data() {
-    return {
+
+  setup() {
+    const state = reactive({
       search: '',
       tags: [],
       field: '',
+    });
+
+    const store = useStore();
+
+    const availableTags = computed(() => {
+      return store.getters['coach/availableTags'];
+    });
+
+    const searchString = computed(() => {
+      return store.getters['coach/searchString'];
+    });
+
+    const fields = computed(() => {
+      return store.getters['coach/fields'];
+    });
+
+    function setSearch(value) {
+      state.search = value;
+      store.dispatch('coach/filterCoaches', state);
+    }
+
+    function setField(value) {
+      state.field = value;
+      store.dispatch('coach/filterCoaches', state);
+    }
+
+    function setTags(value) {
+      state.tags = value;
+      store.dispatch('coach/filterCoaches', state);
+    }
+
+    return {
+      ...toRefs(state),
+      availableTags,
+      searchString,
+      fields,
+      setSearch,
+      setField,
+      setTags,
     };
-  },
-  computed: {
-    ...mapGetters('coach', ['availableTags', 'searchString', 'fields']),
-  },
-  methods: {
-    ...mapActions('coach', ['filterCoaches']),
-    setSearch(value) {
-      console.log(value);
-      this.search = value;
-      this.filterCoaches({
-        search: value,
-        tags: this.tags,
-        field: this.field,
-      });
-    },
-    setField(value) {
-      this.field = value;
-      this.filterCoaches({
-        search: this.search,
-        tags: this.tags,
-        field: value,
-      });
-    },
-    setTags(tags) {
-      this.tags = tags;
-      this.filterCoaches({
-        search: this.search,
-        tags: tags,
-        field: this.field,
-      });
-    },
   },
 };
 </script>

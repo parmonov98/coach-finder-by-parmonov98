@@ -76,37 +76,32 @@
 </template>
 
 <script>
-import { mapActions, mapGetters } from 'vuex';
+import { computed } from 'vue';
+import { useStore } from 'vuex';
 import BaseButton from '../../components/UI/BaseButton.vue';
 export default {
   components: { BaseButton },
   props: ['coachID'],
-  created: async function () {
-    const data = await this.getCoaches();
+  async setup(props) {
+    const store = useStore();
+    const data = await store.dispatch('coach/getCoaches');
     if (data) {
-      this.getGoach(this.coachID);
+      await store.dispatch('coach/getGoach', props.coachID);
     }
-  },
-  methods: {
-    ...mapActions('coach', ['getCoaches', 'getGoach']),
-  },
-  // methods: {
-  //   ...mapActions('coach', ['getGoach', 'getGoaches']),
-  // },
-  computed: {
-    ...mapGetters('coach', ['coach']),
-    fullName() {
-      if (this.coach) {
-        return (
-          this.coach.first_name +
-          ' ' +
-          this.coach.last_name
-        ).toLocaleUpperCase();
+
+    const coach = store.getters['coach/coach'];
+
+    const doesCoachExist = computed(() => {
+      return !!coach;
+    });
+
+    const fullName = computed(() => {
+      if (coach) {
+        return (coach.first_name + ' ' + coach.last_name).toLocaleUpperCase();
       } else return '';
-    },
-    doesCoachExist() {
-      return !!this.coach;
-    },
+    });
+
+    return { doesCoachExist, coach, fullName };
   },
 };
 </script>

@@ -17,15 +17,28 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
+import { computed } from 'vue';
+import { useStore } from 'vuex';
 import CoachItem from './CoachItem.vue';
 export default {
   components: {
     CoachItem,
   },
 
-  computed: {
-    ...mapGetters('coach', ['coaches', 'hasCoaches']),
+  setup() {
+    const store = useStore();
+
+    const hasCoaches = computed(() => {
+      return store.getters['coach/hasCoaches'];
+    });
+    const coaches = computed(() => {
+      return store.getters['coach/coaches'];
+    });
+
+    return {
+      hasCoaches,
+      coaches,
+    };
   },
 };
 </script>

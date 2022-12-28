@@ -123,11 +123,14 @@
 </template>
 
 <script>
+import { reactive } from '@vue/reactivity';
+import { toRefs } from 'vue';
+import { useStore } from 'vuex';
 import CoachTags from '../../components/coaches/CoachTags.vue';
 export default {
   components: { CoachTags },
-  data() {
-    return {
+  setup() {
+    const state = reactive({
       firstName: {
         val: '',
         isValid: true,
@@ -136,11 +139,11 @@ export default {
         val: '',
         isValid: true,
       },
-      description: {
+      field: {
         val: '',
         isValid: true,
       },
-      field: {
+      description: {
         val: '',
         isValid: true,
       },
@@ -159,91 +162,95 @@ export default {
       isFormValid: true,
       isFormValidadated: false,
       isLoading: false,
-    };
-  },
-  computed: {},
-  methods: {
-    validateForm() {
-      this.isFormValid = true;
+    });
 
-      if (this.firstName.val === '') {
-        this.firstName.isValid = false;
-        this.isFormValid = false;
+    function validateForm() {
+      state.isFormValid = true;
+
+      if (state.firstName.val === '') {
+        state.firstName.isValid = false;
+        state.isFormValid = false;
       }
 
-      if (this.lastName.val === '') {
-        this.lastName.isValid = false;
-        this.isFormValid = false;
+      if (state.lastName.val === '') {
+        state.lastName.isValid = false;
+        state.isFormValid = false;
       }
 
-      if (this.field.val === '') {
-        this.field.isValid = false;
-        this.isFormValid = false;
+      if (state.field.val === '') {
+        state.field.isValid = false;
+        state.isFormValid = false;
       }
 
-      if (this.photo.val === '') {
-        this.photo.isValid = false;
-        this.isFormValid = false;
+      if (state.photo.val === '') {
+        state.photo.isValid = false;
+        state.isFormValid = false;
       }
 
-      if (this.description.val === '') {
-        this.description.isValid = false;
-        this.isFormValid = false;
+      if (state.description.val === '') {
+        state.description.isValid = false;
+        state.isFormValid = false;
       }
 
-      if (this.tags.val.length == 0) {
-        this.tags.isValid = false;
-        this.isFormValid = false;
+      if (state.tags.val.length == 0) {
+        state.tags.isValid = false;
+        state.isFormValid = false;
       }
 
-      if (this.email.val === '') {
-        this.email.isValid = false;
-        this.isFormValid = false;
+      if (state.email.val === '') {
+        state.email.isValid = false;
+        state.isFormValid = false;
       }
 
-      console.log(this.firstName);
+      state.isFormValidadated = true;
+    }
 
-      this.isFormValidadated = true;
-    },
-    clearValidity(input) {
-      console.log(input);
-      this[input].isValid = true;
-    },
-    setTags(tags) {
-      this.tags.val = tags;
-    },
-    async onSubmit(e) {
-      this.isLoading = true;
-      this.validateForm();
+    function clearValidity(input) {
+      state[input].isValid = true;
+    }
 
-      console.log(e);
+    function setTags(tags) {
+      state.tags.val = tags;
+    }
 
-      console.log(this);
+    const store = useStore();
 
-      if (this.isFormValid) {
+    async function onSubmit() {
+      state.isLoading = true;
+      validateForm();
+
+      if (state.isFormValid) {
         const data = {
-          first_name: this.firstName.val,
-          last_name: this.lastName.val,
-          photo: this.photo.val,
-          email: this.email.val,
-          field: this.field.val,
-          description: this.description.val,
-          tags: [...this.tags.val],
+          first_name: state.firstName.val,
+          last_name: state.lastName.val,
+          photo: state.photo.val,
+          email: state.email.val,
+          field: state.field.val,
+          description: state.description.val,
+          tags: [...state.tags.val],
         };
-        console.log(data);
-        this.firstName.val = '';
-        this.lastName.val = '';
-        this.photo.val = '';
-        this.email.val = '';
-        this.field.val = '';
-        this.description.val = '';
-        this.tags.val = [];
-        await this.$store.dispatch('coach/addCoach', data);
-        this.isLoading = false;
+        state.firstName.val = '';
+        state.lastName.val = '';
+        state.photo.val = '';
+        state.email.val = '';
+        state.field.val = '';
+        state.description.val = '';
+        state.tags.val = [];
+        await store.dispatch('coach/addCoach', data);
+        state.isLoading = false;
       } else {
-        this.isLoading = false;
+        state.isLoading = false;
       }
-    },
+    }
+
+    return {
+      ...toRefs(state),
+      state,
+      validateForm,
+      clearValidity,
+      setTags,
+      onSubmit,
+    };
   },
 };
 </script>

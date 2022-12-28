@@ -2,7 +2,6 @@ export default {
   async getRequests(context) {
     const token = context.rootGetters['auth/token'];
     const coachID = context.rootGetters['auth/userId'];
-    console.log(coachID);
     const response = await fetch(`https://vuejs-df53b-default-rtdb.europe-west1.firebasedatabase.app/coach_finder-requests/${coachID}.json?auth=` + token);
 
 
@@ -72,7 +71,6 @@ export default {
       return is_ok;
     });
 
-    console.log(filtered);
     state.filtered = [...filtered];
   },
 

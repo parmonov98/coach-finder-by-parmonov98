@@ -75,11 +75,24 @@
 </template>
 
 <script>
-import { mapActions, mapGetters } from 'vuex';
-
+import { onBeforeMount, reactive, computed, toRefs } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { useStore } from 'vuex';
 export default {
-  data() {
-    return {
+  setup() {
+    const store = useStore();
+    const router = useRouter();
+    const isAuthed = computed(() => {
+      return store.getters['auth/isAuthed'];
+    });
+
+    onBeforeMount(() => {
+      if (isAuthed.value) {
+        router.replace({ name: 'requests' });
+      }
+    });
+
+    const state = reactive({
       email: {
         val: '',
         isValid: true,
@@ -92,53 +105,114 @@ export default {
       isLoading: true,
       error: null,
       success: null,
-    };
-  },
-  beforeMount: function () {
-    if (this.isAuthed) {
-      this.$router.replace({ name: 'coaches' });
+    });
+
+    function clearValidity(input) {
+      state[input].isValid = true;
+      state.isFormValid = true;
     }
-  },
-  computed: {
-    ...mapGetters('auth', ['isAuthed']),
-  },
-  methods: {
-    ...mapActions('auth', ['signIn']),
-    clearValidity(input) {
-      this[input].isValid = true;
-      this.isFormValid = true;
-    },
-    validateForm() {
-      if (this.email.val === '') {
-        this.email.isValid = false;
-        this.isFormValid = false;
+
+    function validateForm() {
+      if (state.email.val === '') {
+        state.email.isValid = false;
+        state.isFormValid = false;
       }
 
-      if (this.password.val === '' || this.password.val.length < 6) {
-        this.password.isValid = false;
-        this.isFormValid = false;
+      if (state.password.val === '' || state.password.val.length < 6) {
+        state.password.isValid = false;
+        state.isFormValid = false;
       }
-    },
-    async onSubmit() {
-      this.validateForm();
-      if (this.isFormValid) {
-        const response = await this.signIn({
-          email: this.email.val,
-          password: this.password.val,
+    }
+
+    const route = useRoute();
+
+    async function onSubmit() {
+      validateForm();
+      if (state.isFormValid) {
+        const response = await store.dispatch('auth/signIn', {
+          email: state.email.val,
+          password: state.password.val,
         });
         if (response.error && response.error.message) {
-          this.error = response.error.message;
+          state.error = response.error.message;
           return;
         }
-        const route_name = this.$route.query.redirect;
+        const route_name = route.query.redirect;
         this.success = 'You signed in';
         if (route_name) {
-          this.$router.replace({ name: route_name });
+          router.replace({ name: route_name });
         } else {
-          this.$router.replace({ name: 'coaches' });
+          router.replace({ name: 'coaches' });
         }
       }
-    },
+    }
+
+    return {
+      ...toRefs(state),
+      clearValidity,
+      onSubmit,
+    };
+  },
+  // data() {
+  //   return {
+  //     email: {
+  //       val: '',
+  //       isValid: true,
+  //     },
+  //     password: {
+  //       val: '',
+  //       isValid: true,
+  //     },
+  //     isFormValid: true,
+  //     isLoading: true,
+  //     error: null,
+  //     success: null,
+  //   };
+  // },
+  // beforeMount: function () {
+  //   if (this.isAuthed) {
+  //     this.$router.replace({ name: 'coaches' });
+  //   }
+  // },
+  // computed: {
+  //   ...mapGetters('auth', ['isAuthed']),
+  // },
+  methods: {
+    // ...mapActions('auth', ['signIn']),
+    // clearValidity(input) {
+    //   this[input].isValid = true;
+    //   this.isFormValid = true;
+    // },
+    // validateForm() {
+    //   if (this.email.val === '') {
+    //     this.email.isValid = false;
+    //     this.isFormValid = false;
+    //   }
+    //   if (this.password.val === '' || this.password.val.length < 6) {
+    //     this.password.isValid = false;
+    //     this.isFormValid = false;
+    //   }
+    // },
+    // async onSubmit() {
+    //   this.validateForm();
+    //   if (this.isFormValid) {
+    //     const response = await this.signIn({
+    //       email: this.email.val,
+    //       password: this.password.val,
+    //     });
+    //     if (response.error && response.error.message) {
+    //       this.error = response.error.message;
+    //       return;
+    //     }
+    //     const route_name = this.$route.query.redirect;
+    //     this.success = 'You signed in';
+    //     if (route_name) {
+    //       this.$router.replace({ name: route_name });
+    //     } else {
+    //       this.$router.replace({ name: 'coaches' });
+    //     }
+    //   }
+    // },
   },
 };
 </script>

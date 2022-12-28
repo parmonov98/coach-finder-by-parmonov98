@@ -1,6 +1,6 @@
 <template>
   <base-layout>
-    <template #header>
+    <template #default>
       <base-loading-panel v-if="isLoading"></base-loading-panel>
       <base-modal :show="!!error">
         <p>{{ error }}</p>
@@ -14,11 +14,14 @@
             <label class="form-label" for="name">Name</label>
             <input
               class="form-control"
+              :class="{ 'is-invalid': !name.isValid }"
               id="name"
               type="text"
               placeholder="Name"
               v-model="name.val"
+              @focusin="clearValidity('name')"
             />
+            <div class="invalid-feedback">Please, enter name</div>
           </div>
 
           <!-- Email address input -->
@@ -26,11 +29,14 @@
             <label class="form-label" for="email">Email</label>
             <input
               class="form-control"
+              :class="{ 'is-invalid': !email.isValid }"
               id="email"
               type="email"
               placeholder="Email Address"
               v-model="email.val"
+              @focusin="clearValidity('email')"
             />
+            <div class="invalid-feedback">Please, enter email</div>
           </div>
 
           <!-- Email address input -->
@@ -38,11 +44,14 @@
             <label class="form-label" for="Title">Title</label>
             <input
               class="form-control"
+              :class="{ 'is-invalid': !title.isValid }"
               id="Title"
               type="text"
               placeholder="Title"
               v-model="title.val"
+              @focusin="clearValidity('title')"
             />
+            <div class="invalid-feedback">Please, enter title</div>
           </div>
 
           <!-- Message input -->
@@ -50,12 +59,15 @@
             <label class="form-label" for="message">Message</label>
             <textarea
               class="form-control"
+              :class="{ 'is-invalid': !message.isValid }"
               id="message"
               type="text"
               placeholder="Message"
               style="height: 10rem"
               v-model="message.val"
+              @focusin="clearValidity('message')"
             ></textarea>
+            <div class="invalid-feedback">Please, enter message</div>
           </div>
 
           <!-- Form submit button -->
@@ -69,11 +81,13 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex';
+import { reactive, toRefs } from 'vue';
+import { useStore } from 'vuex';
 export default {
   props: ['coachID'],
-  data() {
-    return {
+  setup(props) {
+    const store = useStore();
+    const state = reactive({
       name: {
         val: '',
         isValid: true,
@@ -92,71 +106,81 @@ export default {
       },
       isLoading: false,
       isFormValid: true,
+      isFormValidadated: false,
       error: null,
-    };
-  },
-  methods: {
-    ...mapActions('requests', ['addRequest']),
-    validateForm() {
-      this.isFormValid = true;
+    });
 
-      if (this.name.val === '') {
-        this.name.isValid = false;
-        this.isFormValid = false;
+    function validateForm() {
+      state.isFormValid = true;
+
+      if (state.name.val === '') {
+        state.name.isValid = false;
+        state.isFormValid = false;
       }
 
-      if (this.email.val === '') {
-        this.email.isValid = false;
-        this.isFormValid = false;
+      if (state.email.val === '') {
+        state.email.isValid = false;
+        state.isFormValid = false;
       }
 
-      if (this.title.val === '') {
-        this.title.isValid = false;
-        this.isFormValid = false;
+      if (state.title.val === '') {
+        state.title.isValid = false;
+        state.isFormValid = false;
       }
 
-      if (this.message.val === '') {
-        this.message.isValid = false;
-        this.isFormValid = false;
+      if (state.message.val === '') {
+        state.message.isValid = false;
+        state.isFormValid = false;
       }
 
-      this.isFormValidadated = true;
-    },
-    async onSubmit() {
-      this.isLoading = true;
-      this.validateForm();
-      if (!this.isFormValid) {
+      state.isFormValidadated = true;
+    }
+
+    function clearValidity(input) {
+      state[input].isValid = true;
+    }
+
+    async function onSubmit() {
+      state.isLoading = true;
+      validateForm();
+      if (!state.isFormValid) {
+        state.isLoading = false;
         return;
       }
-      console.log(this.data);
-      console.log(this.coachID);
-
-      const response = await this.addRequest({
-        name: this.name.val,
-        email: this.email.val,
-        title: this.title.val,
-        message: this.message.val,
-        coachID: this.coachID,
+      const response = await store.dispatch('requests/addRequest', {
+        name: state.name.val,
+        email: state.email.val,
+        title: state.title.val,
+        message: state.message.val,
+        coachID: state.coachID,
       });
       console.log(response);
-      this.email = {
+      state.email = {
         val: '',
         isValid: true,
       };
-      this.name = {
+      state.name = {
         val: '',
         isValid: true,
       };
-      this.title = {
+      state.title = {
         val: '',
         isValid: true,
       };
-      this.message = {
+      state.message = {
         val: '',
         isValid: true,
       };
-      this.isLoading = false;
-    },
+      state.isLoading = false;
+    }
+
+    return {
+      ...toRefs(state),
+      ...toRefs(props),
+      validateForm,
+      clearValidity,
+      onSubmit,
+    };
   },
 };
 </script>

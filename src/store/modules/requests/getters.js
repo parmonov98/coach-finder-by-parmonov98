@@ -16,7 +16,6 @@ export default {
     return getters.filtered;
   },
   hasRequests(_, getters) {
-    console.log(getters.filtered);
     if (getters.filtered.length > 0) {
       return true;
     } else return false;

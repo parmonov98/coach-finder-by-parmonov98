@@ -129,18 +129,27 @@
 </template>
 
 <script>
-import { mapActions, mapGetters } from 'vuex';
+import { computed } from 'vue';
+import { useStore } from 'vuex';
 import BaseButton from '../UI/BaseButton.vue';
 export default {
   components: { BaseButton },
-  afterMount: function () {
-    console.log(this.isAuthed);
-  },
-  computed: {
-    ...mapGetters('auth', ['isAuthed']),
-  },
-  methods: {
-    ...mapActions('auth', ['tryLogin', 'logout']),
+
+  setup() {
+    const store = useStore();
+    const isAuthed = computed(() => store.getters['auth/isAuthed']);
+
+    function tryLogin() {
+      store.dispatch('auth/tryLogin');
+    }
+
+    tryLogin();
+
+    function logout() {
+      store.dispatch('auth/logout');
+    }
+
+    return { isAuthed, tryLogin, logout };
   },
 };
 </script>

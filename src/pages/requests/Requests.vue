@@ -23,36 +23,38 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex';
+import { ref } from '@vue/reactivity';
+import { useStore } from 'vuex';
 import RequestsList from '../../components/requests/RequestsList.vue';
 export default {
   components: {
     RequestsList,
   },
-  data() {
-    return {
-      isLoading: true,
-      error: null,
-      search: '',
-    };
-  },
-  created: function () {
-    setTimeout(() => {
-      this.loadRequests();
-    }, 0);
-  },
-  methods: {
-    ...mapActions('requests', ['getRequests', 'filterRequests']),
-    searchRequests(e) {
-      this.filterRequests(e.target.value);
-    },
-    async loadRequests() {
-      const responseData = await this.getRequests();
+  setup() {
+    const store = useStore();
+    const isLoading = ref(true);
+    const error = ref();
+    async function loadRequests() {
+      const responseData = await store.dispatch('requests/getRequests');
+      console.log(responseData);
       if (responseData !== true) {
-        this.error = responseData.error;
+        error.value = responseData.error;
       }
-      this.isLoading = false;
-    },
+      isLoading.value = false;
+    }
+
+    loadRequests();
+
+    function searchRequests(e) {
+      store.dispatch('requests/filterRequests', e.target.value);
+    }
+
+    return {
+      isLoading,
+      error,
+      loadRequests,
+      searchRequests,
+    };
   },
 };
 </script>
